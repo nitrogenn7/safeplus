@@ -1,42 +1,40 @@
 "use client";
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-export default function DashboardPage() {
-  const [loading, setLoading] = useState(true);
+export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
+  const [progress, setProgress] = useState<any[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    const checkUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) router.push("/login");
+      else setUser(data.user);
+    });
+  }, []);
 
-      if (!user) {
-        router.push("/login"); // ✅ redirect to login if not authenticated
-      } else {
-        setUser(user);
-      }
-      setLoading(false);
-    };
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("user_progress").select("*").eq("user_id", user.id)
+      .then(({ data }) => setProgress(data || []));
+  }, [user]);
 
-    checkUser();
-  }, [router]);
+  const downloadCertificate = () => {
+    alert("Certificate download placeholder");
+  };
 
-  if (loading) return <p>Loading...</p>;
   if (!user) return null;
 
   return (
     <div className="max-w-3xl mx-auto py-12">
-      <h1 className="text-2xl font-bold">Welcome, {user.email}</h1>
-      {/* dashboard content here */}
+      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+      <p>Lessons Completed: {progress.filter(p => p.completed).length}</p>
+      <p>Quiz Passed: {progress.some(p => p.quiz_passed) ? "✅" : "❌"}</p>
+      {progress.some(p => p.quiz_passed) && (
+        <button onClick={downloadCertificate} className="mt-4 px-6 py-2 bg-green-600 text-white rounded">Download Certificate</button>
+      )}
     </div>
   );
 }
