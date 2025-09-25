@@ -10,7 +10,7 @@ export default function Protected({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         supabase.auth.getUser().then(({ data }) => {
-            if (!data.user) router.push("/login"); // redirect if not logged in
+            if (!data.user) router.push("/login");
             else setUser(data.user);
             setLoading(false);
         });

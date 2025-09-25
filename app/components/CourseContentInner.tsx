@@ -1,8 +1,6 @@
 "use client";
-import { supabase } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
-
- // ensures this runs in the browser
+import { supabase } from "@/lib/supabaseClient";
 
 export default function CourseContentInner({ slug }: { slug: string }) {
     const [lessons, setLessons] = useState<any[]>([]);
